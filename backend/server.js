@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('express-async-errors');
 
 const express = require('express');
 const helmet = require('helmet');
@@ -42,7 +43,7 @@ async function start() {
   }
 
   server = app.listen(port, () => {
-    console.info(`Naija City backend listening on port ${port}`);
+    console.info(`Naija City backend listening on port http://localhost:${port}`);
   });
 }
 

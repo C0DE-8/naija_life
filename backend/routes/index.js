@@ -2,6 +2,9 @@ const express = require('express');
 const { checkDatabase } = require('../db');
 
 const router = express.Router();
+const authRouter = require('./auth');
+
+router.use('/auth', authRouter);
 
 router.get('/', (_req, res) => {
   res.json({ status: 'ok', message: 'Naija City API router is working' });
