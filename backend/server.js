@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: true, legacyHeaders: false }));
 
 app.get('/', (_req, res) => {
-  res.json({ status: 'ok', message: 'Naija City is running' });
+  res.json({ status: 'ok', message: 'Naija Life is running' });
 });
 
 app.use(apiBasePath, apiRouter);
@@ -43,7 +43,7 @@ async function start() {
   }
 
   server = app.listen(port, () => {
-    console.info(`Naija City backend listening on port http://localhost:${port}`);
+    console.info(`Naija Life backend listening on port http://localhost:${port}`);
   });
 }
 
@@ -61,7 +61,7 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 if (require.main === module) {
   start().catch(async (error) => {
-    console.error('Could not start Naija City backend:', error.message);
+    console.error('Could not start Naija Life backend:', error.message);
     await pool.end();
     process.exit(1);
   });

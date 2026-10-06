@@ -1,11 +1,12 @@
 {
-  "name": "naija-city-backend",
+  "name": "naija-life-backend",
   "version": "1.0.0",
-  "description": "Naija City API backend",
+  "description": "Naija Life API backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "db:migrate": "node migration/run.js"
   },
   "keywords": [],
   "license": "ISC",

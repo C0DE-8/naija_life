@@ -1,1 +1,1 @@
-# naija_city
+# Naija Life

@@ -7,7 +7,7 @@ const authRouter = require('./auth');
 router.use('/auth', authRouter);
 
 router.get('/', (_req, res) => {
-  res.json({ status: 'ok', message: 'Naija City API router is working' });
+  res.json({ status: 'ok', message: 'Naija Life API router is working' });
 });
 
 router.get('/health', async (_req, res, next) => {
