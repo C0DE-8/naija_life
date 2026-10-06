@@ -1,14 +1,22 @@
 {
-  "name": "backend",
+  "name": "naija-city-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "db.js",
+  "description": "Naija City API backend",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "mysql2": "^3.12.0",
+    "node-cron": "^3.0.3"
+  }
 }
