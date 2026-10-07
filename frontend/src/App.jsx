@@ -13,6 +13,7 @@ import MessagesPage from './pages/messages/MessagesPage'
 import PlayerProfilePage from './pages/player-profile/PlayerProfilePage'
 import SettingsPage from './pages/settings/SettingsPage'
 import VehicleUpgradePage from './pages/vehicle-upgrades/VehicleUpgradePage'
+import NotFoundPage from './pages/not-found/NotFoundPage'
 import './App.css'
 
 function CityMark() {
@@ -228,8 +229,9 @@ function App() {
     <Route path="/dashboard" element={<Navigate replace to={hasSession ? '/home' : '/signin'} />} />
     <Route path="/player/:playerId" element={hasSession ? <Dashboard /> : <Navigate replace to="/signin" />} />
     <Route path="/admin/*" element={hasSession ? <Dashboard /> : <Navigate replace to="/signin" />} />
-    <Route path="/:page" element={hasSession ? <Dashboard /> : <Navigate replace to="/signin" />} />
-    <Route path="*" element={<Navigate replace to={hasSession ? '/home' : '/signin'} />} />
+    <Route path="/choose-character" element={hasSession ? <Dashboard /> : <Navigate replace to="/signin" />} />
+    {pageLinks.map(({ path }) => <Route key={path} path={path} element={hasSession ? <Dashboard /> : <Navigate replace to="/signin" />} />)}
+    <Route path="*" element={<NotFoundPage hasSession={hasSession} />} />
   </Routes>
 }
 
