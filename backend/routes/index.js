@@ -3,8 +3,11 @@ const { checkDatabase } = require('../db');
 
 const router = express.Router();
 const authRouter = require('./auth');
+const gameRouter = require('./game');
+const { authenticate } = require('../middleware/authenticate');
 
 router.use('/auth', authRouter);
+router.use('/game', authenticate, gameRouter);
 
 router.get('/', (_req, res) => {
   res.json({ status: 'ok', message: 'Naija Life API router is working' });

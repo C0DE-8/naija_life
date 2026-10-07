@@ -3,6 +3,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const mysql = require('mysql2/promise');
+const migrationsDirectory = path.resolve(__dirname, '../migration');
 
 const required = ['DB_HOST', 'DB_NAME', 'DB_USER'];
 const missing = required.filter((key) => !process.env[key]);
@@ -53,7 +54,7 @@ async function run() {
       'CREATE TABLE IF NOT EXISTS schema_migrations (name VARCHAR(190) PRIMARY KEY, applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)',
     );
 
-    const files = fs.readdirSync(__dirname)
+    const files = fs.readdirSync(migrationsDirectory)
       .filter((file) => /^\d+_[\w-]+\.sql$/.test(file))
       .sort();
 
@@ -64,7 +65,7 @@ async function run() {
         continue;
       }
 
-      for (const statement of splitStatements(fs.readFileSync(path.join(__dirname, file), 'utf8'))) {
+      for (const statement of splitStatements(fs.readFileSync(path.join(migrationsDirectory, file), 'utf8'))) {
         await connection.query(statement);
       }
       await connection.execute('INSERT INTO schema_migrations (name) VALUES (?)', [file]);

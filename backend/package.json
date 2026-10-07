@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "db:migrate": "node migration/run.js"
+    "db:migrate": "node utils/run-migrations.js"
   },
   "keywords": [],
   "license": "ISC",

@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('node:crypto');
 const { pool } = require('../db');
 
 const router = express.Router();
@@ -11,7 +12,7 @@ function issueToken(player) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is not configured');
   return jwt.sign(
-    { sub: String(player.id), username: player.username, role: player.role },
+    { sub: String(player.id), username: player.username, role: player.role, jti: crypto.randomUUID() },
     secret,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' },
   );
@@ -127,6 +128,23 @@ router.post('/signin', async (req, res, next) => {
     delete player.password;
     return res.json({ token: issueToken(player), player: publicPlayer(player) });
   } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/signout', async (req, res, next) => {
+  const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+  if (!token) return res.status(400).json({ message: 'Sign in first.' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    await pool.execute('INSERT IGNORE INTO revoked_tokens (token_hash, expires_at) VALUES (?, FROM_UNIXTIME(?))', [
+      crypto.createHash('sha256').update(token).digest('hex'), decoded.exp,
+    ]);
+    return res.json({ message: 'Signed out.' });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Your session has expired.' });
+    }
     return next(error);
   }
 });
