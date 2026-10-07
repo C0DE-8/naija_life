@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getApiError } from '../api/auth'
-import { getPlayerProfile, postPlayerComment } from '../api/player'
+import { getApiError } from '../../api/auth'
+import { getPlayerProfile, postPlayerComment } from '../../api/player'
 
 export default function PlayerProfilePage({ playerId }) {
   const [profile, setProfile] = useState(null)

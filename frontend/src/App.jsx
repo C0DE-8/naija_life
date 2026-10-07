@@ -3,14 +3,16 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } fr
 import { FiArrowUpRight } from 'react-icons/fi'
 import { getApiError, signIn, signOut, signUp } from './api/auth'
 import { bankTransfer, collectPropertyIncome, finishActivity, getActivities, getDashboard, leaveActivity, purchaseListing, sellListing, startActivity, upgradeVehicle } from './api/game'
-import CatalogPage from './pages/CatalogPage'
-import CharacterSelector from './pages/CharacterSelector'
-import VehicleUpgradePage from './pages/VehicleUpgradePage'
-import MessagesPage from './pages/MessagesPage'
-import SettingsPage from './pages/SettingsPage'
-import CasinoPage from './pages/CasinoPage'
-import PlayerProfilePage from './pages/PlayerProfilePage'
 import { isLocalDemo, resetLocalDemo } from './api/demo'
+import GameLayout from './components/GameLayout'
+import { pageLinks } from './config/navigation'
+import CasinoPage from './pages/casino/CasinoPage'
+import CatalogPage from './pages/catalog/CatalogPage'
+import CharacterSelector from './pages/character-selector/CharacterSelector'
+import MessagesPage from './pages/messages/MessagesPage'
+import PlayerProfilePage from './pages/player-profile/PlayerProfilePage'
+import SettingsPage from './pages/settings/SettingsPage'
+import VehicleUpgradePage from './pages/vehicle-upgrades/VehicleUpgradePage'
 import './App.css'
 
 function CityMark() {
@@ -94,14 +96,6 @@ function AuthPage() {
   )
 }
 
-const pageLinks = [
-  { label: 'Home', path: '/home', group: 'City' },
-  { label: 'Vehicles', path: '/vehicles' }, { label: 'Properties', path: '/properties' }, { label: 'Pets', path: '/pets' }, { label: 'Shop', path: '/shop' },
-  { label: 'Vehicle upgrades', path: '/vehicle-upgrades', group: 'Upgrades' }, { label: 'Home upgrades', path: '/home-upgrades' }, { label: 'Garage upgrades', path: '/garage-upgrades' }, { label: 'Hangar upgrades', path: '/hangar-upgrades' }, { label: 'Quay upgrades', path: '/quay-upgrades' },
-  { label: 'Jobs', path: '/jobs', group: 'Activities' }, { label: 'Gym', path: '/gym' }, { label: 'School', path: '/school' }, { label: 'Bank', path: '/bank' }, { label: 'Hospital', path: '/hospital' },
-  { label: 'Street races', path: '/races', group: 'Competition' }, { label: 'Fight arena', path: '/fight-arena' }, { label: 'Leaderboard', path: '/leaderboard' }, { label: 'Casino', path: '/casino' }, { label: 'Resources', path: '/resources' },
-  { label: 'Messages', path: '/messages', group: 'Account' }, { label: 'Settings', path: '/settings' },
-]
 const catalogKinds = { Vehicles: 'vehicles', Properties: 'properties', Pets: 'pets', Shop: 'shop', 'Street races': 'races', 'Fight arena': 'fights', Leaderboard: 'leaderboard', Resources: 'resources', 'Home upgrades': 'home-upgrades', 'Garage upgrades': 'garage-upgrades', 'Hangar upgrades': 'hangar-upgrades', 'Quay upgrades': 'quay-upgrades' }
 const activityKinds = { Jobs: 'job', Gym: 'gym', School: 'school', Hospital: 'hospital' }
 const pageCopy = {
@@ -169,17 +163,7 @@ function Dashboard() {
   const activityGroup = activities?.[activityKinds[section]]
   const catalogKind = catalogKinds[section]
 
-  return <main className="game-shell">
-    <aside className="game-sidebar">
-      <Link className="brand game-brand" to="/dashboard"><CityMark /> NAIJA LIFE</Link>
-      <div className="sidebar-player">{player?.avatar ? <img className="player-avatar-image" src={player.avatar.startsWith('images/') ? `/ncity/${player.avatar}` : player.avatar} alt="" /> : <div className="player-avatar">{player?.username?.slice(0, 1).toUpperCase() || 'N'}</div>}<div><strong>{player?.username || 'Loading…'}</strong><span>LEVEL {player?.level || 1}</span></div></div>
-      <nav className="game-nav" aria-label="Game sections">{pageLinks.map((item) => <Link key={item.path} className={`${section === item.label ? 'selected' : ''} ${item.group ? 'nav-group-start' : ''}`} to={item.path}>{item.label}</Link>)}{player?.role === 'Admin' && <Link className={`nav-group-start ${routePath.startsWith('/admin') ? 'selected' : ''}`} to="/admin">Administration</Link>}</nav>
-      {demoMode && <button className="demo-reset-button" onClick={async () => { resetLocalDemo(); setMessage('Demo progress reset.'); await load() }}>Reset demo progress</button>}
-      <button className="signout-button" onClick={() => { signOut(); navigate('/signin', { replace: true }) }}>Sign out</button>
-    </aside>
-    <section className="game-content">
-      <header className="game-header"><div><p className="eyebrow"><span className="live-dot" /> LAGOS, NIGERIA {demoMode && <span className="demo-pill">LOCAL DEMO</span>}</p><h1>{section === 'Home' ? `Welcome, ${player?.username || 'player'}.` : section}</h1></div><div className="online-count"><i /> {dashboard?.online_players ?? '—'} online</div></header>
-      {message && <div className="game-message" role="status">{message}</div>}
+  return <GameLayout player={player} section={section} routePath={routePath} demoMode={demoMode} message={message} onlinePlayers={dashboard?.online_players} onResetDemo={async () => { resetLocalDemo(); setMessage('Demo progress reset.'); await load() }} onSignOut={() => { signOut(); navigate('/signin', { replace: true }) }}>
       {dashboard && ({ Jobs: ['work.jpg', 'Work in the city'], Gym: ['gym.jpg', 'Build your strength'], Hospital: ['hospital1.jpg', 'Recover and get back on your feet'] })[section] && <div className={`activity-banner banner-${section.toLowerCase()}`}><img src={`/ncity/images/backgrounds/${({ Jobs: 'work.jpg', Gym: 'gym.jpg', Hospital: 'hospital1.jpg' })[section]}`} alt="" /><span>{({ Jobs: 'Work in the city', Gym: 'Build your strength', Hospital: 'Recover and get back on your feet' })[section]}</span></div>}
       {!dashboard && <div className="loading-card">Loading your city…</div>}
       {dashboard && section === 'Home' && <>
@@ -209,8 +193,7 @@ function Dashboard() {
       {dashboard && section === 'Choose character' && <CharacterSelector player={player} />}
       {dashboard && (pageCopy[section] || section === 'City page') && !catalogKind && !['Choose character', 'Vehicle upgrades', 'Messages', 'Settings', 'Player profile'].includes(section) && <LegacyPage section={section} description={pageCopy[section] || 'This page is part of the original Naija City player menu.'} player={player} playerId={playerId} />}
       {dashboard && routePath.startsWith('/admin') && <LegacyPage section={player.role === 'Admin' ? 'Administration' : 'Restricted'} description={player.role === 'Admin' ? pageCopy.Administration : 'This area is limited to administrators.'} player={player} />}
-    </section>
-  </main>
+  </GameLayout>
 }
 
 function StatCard({ label, value, detail, percent }) {

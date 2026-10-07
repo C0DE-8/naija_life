@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getApiError } from '../api/auth'
-import { getDemoCatalog, isLocalDemo } from '../api/demo'
-import api from '../api/api'
-import { buyCasinoSpins, spinCasino } from '../api/player'
+import { getApiError } from '../../api/auth'
+import { getDemoCatalog, isLocalDemo } from '../../api/demo'
+import api from '../../api/api'
+import { buyCasinoSpins, spinCasino } from '../../api/player'
 
 export default function CasinoPage({ player, onUpdate }) {
   const [prizes, setPrizes] = useState([])

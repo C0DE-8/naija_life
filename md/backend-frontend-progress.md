@@ -29,7 +29,17 @@ Player operations use bearer tokens. Balance and timed-action mutations lock the
 
 The sign-in and registration forms now navigate into an authenticated dashboard. The dashboard shows player balances and stats, a live active-action timer, and navigation for work, gym, school, hospital and bank. The activity screens use catalog data from the database and refresh the dashboard after each mutation.
 
-The frontend route map now includes the player-facing PHP pages: `/home`, `/vehicles`, `/properties`, `/pets`, `/shop`, `/jobs`, `/gym`, `/school`, `/bank`, `/hospital`, `/races`, `/fight-arena`, `/leaderboard`, `/casino`, `/resources`, `/messages`, `/settings`, plus character and upgrade pages. The original PHP images are available under `frontend/public/ncity/images`. Purchases are connected for shop items, properties, pets, vehicles and facility upgrades; property income, vehicle upgrades, messages, account settings and casino spins are connected. Races, fights, external resource payments and admin management still need their game actions.
+The frontend route map includes the player-facing PHP pages: `/home`, `/vehicles`, `/properties`, `/pets`, `/shop`, `/jobs`, `/gym`, `/school`, `/bank`, `/hospital`, `/races`, `/fight-arena`, `/leaderboard`, `/casino`, `/resources`, `/messages`, `/settings`, plus character and upgrade pages. The original PHP images are available under `frontend/public/ncity/images`. Purchases are connected for shop items, properties, pets, vehicles and facility upgrades; property income, vehicle upgrades, messages, account settings, public profiles and casino spins are connected. Races, fights, external resource payments and admin management still need their game actions.
+
+The authenticated page chrome is reusable in `frontend/src/components/GameLayout.jsx`; its route definitions live in `frontend/src/config/navigation.js` so another page can use the same menu map. On mobile, the menu opens from a labeled button as a scrollable two-column panel, shows the current player, and closes after a route is selected.
+
+## Conversion progress estimate (2026-10-07)
+
+- **Player-facing PHP experience: about 65% converted.** The main route set and core player loops are present, while races, fights, resources/payment flow, and some legacy interactions are still incomplete. Pages that exist as navigation shells are counted as started, not complete.
+- **Full PHP project: 44.4% of the tracked backend checklist (28 of 63 items).** This scope includes authentication, player features, scheduled work, payments, chat, and the admin screens. The checklist is the reproducible count; items are feature-weighted equally, so it is not a measure of hours remaining.
+- **Admin interface: mostly unconverted.** The 27 PHP files under `Ncity-master/admin` are not 27 equivalent player pages; they include management screens and actions that still need a protected admin API/UI.
+
+These are scope estimates from the PHP page/actions inventory and the checked items in `backend-functions-checklist.md`, not a claim of feature parity. Update the checklist as each legacy behavior is implemented and verified.
 
 The sign-in form offers `demo` / `demo`. Those credentials enter a local browser demo and do not call the API; the demo has local player progress, working bank/activity actions, a reset control, and 20-second activity timers. The legacy SQL seed also contains the same demo account for API-backed environments.
 
@@ -39,7 +49,7 @@ Migration `002_game_sessions.sql` adds `revoked_tokens` for sign-out. It was app
 
 ## Remaining PHP systems
 
-The app still needs API and UI work for character selection, public profiles and feed comments, messages and chat, account settings, leaderboard and level rewards, resources and shop inventory, pets, properties and timed income collection, homes/garages/hangars/quays, vehicle upgrades and racing, fights, casino, PayPal payments, administrator screens, language/theme selection, and energy refill scheduling. The broader scope remains tracked in [backend-functions-checklist.md](backend-functions-checklist.md).
+The app still needs public home content, administrator authentication and management actions, home feed comments, global chat, scheduled energy refills, resource purchase effects, races, fights, PayPal notifications and payment history, and online activity tracking. The broader scope remains tracked in [backend-functions-checklist.md](backend-functions-checklist.md).
 
 ## Local setup
 

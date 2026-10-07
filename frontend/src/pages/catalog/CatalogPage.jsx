@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../api/api'
-import { getDemoCatalog, isLocalDemo } from '../api/demo'
+import api from '../../api/api'
+import { getDemoCatalog, isLocalDemo } from '../../api/demo'
 
 const catalogTitles = {
   vehicles: 'Vehicle showroom',

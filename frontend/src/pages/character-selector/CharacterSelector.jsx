@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { chooseCharacter, getCharacters } from '../api/game'
-import { getApiError } from '../api/auth'
+import { chooseCharacter, getCharacters } from '../../api/game'
+import { getApiError } from '../../api/auth'
 
 const stats = ['power', 'agility', 'endurance', 'intelligence']
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getApiError } from '../api/auth'
-import { getPreferences, savePreferences, saveSettings } from '../api/player'
+import { getApiError } from '../../api/auth'
+import { getPreferences, savePreferences, saveSettings } from '../../api/player'
 
 export default function SettingsPage() {
   const [data, setData] = useState(null)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getOwnedVehicles } from '../api/game'
-import { getApiError } from '../api/auth'
+import { getOwnedVehicles } from '../../api/game'
+import { getApiError } from '../../api/auth'
 
 const stats = ['speed', 'acceleration', 'stability']
 

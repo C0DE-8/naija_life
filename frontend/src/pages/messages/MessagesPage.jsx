@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getApiError } from '../api/auth'
-import { getMessages, markMessageRead, sendMessage } from '../api/player'
+import { getApiError } from '../../api/auth'
+import { getMessages, markMessageRead, sendMessage } from '../../api/player'
 
 export default function MessagesPage({ playerId }) {
   const [messages, setMessages] = useState([])
