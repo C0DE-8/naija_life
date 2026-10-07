@@ -35,7 +35,7 @@ router.get('/dashboard', async (req, res) => {
     const [[level]] = await connection.execute('SELECT MIN(min_respect) AS next_respect FROM levels WHERE level = ?', [player.level + 1]);
     const [[counts]] = await connection.query("SELECT (SELECT COUNT(*) FROM players) AS total_players, (SELECT COUNT(*) FROM players WHERE CAST(timeonline AS UNSIGNED) > UNIX_TIMESTAMP() - 300) AS online_players");
     const [properties] = await connection.execute(
-      'SELECT pp.id, p.property, p.income, p.format, p.time, pp.profittime FROM player_properties pp JOIN properties p ON p.id = pp.property_id WHERE pp.player_id = ? ORDER BY pp.id',
+      'SELECT pp.property_id AS id, p.property, p.income, p.format, p.time, pp.profittime FROM player_properties pp JOIN properties p ON p.id = pp.property_id WHERE pp.player_id = ? ORDER BY pp.id',
       [req.player.id],
     );
     await connection.commit();
@@ -179,6 +179,30 @@ router.post('/purchases/:kind/:id', async (req, res) => {
   } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
 });
 
+router.post('/sales/:kind/:id', async (req, res) => {
+  const { kind } = req.params;
+  const id = Number(req.params.id);
+  if (!['item', 'pet', 'vehicle'].includes(kind) || !Number.isInteger(id) || id < 1) return fail(res, 400, 'Choose a valid item to sell.');
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.execute('SELECT id FROM players WHERE id=? FOR UPDATE', [req.player.id]);
+    const table = kind === 'item' ? 'items' : kind === 'pet' ? 'pets' : 'vehicles';
+    const ownedTable = kind === 'item' ? 'player_items' : kind === 'pet' ? 'player_pets' : 'player_vehicles';
+    const ownedColumn = kind === 'vehicle' ? 'vehicle_id' : kind === 'pet' ? 'pet_id' : 'item_id';
+    const effectColumns = kind === 'vehicle' ? '' : ', d.bonustype AS bonusType, d.bonusvalue AS bonusValue';
+    const [[owned]] = await connection.execute(`SELECT o.id, d.money, d.gold${effectColumns} FROM ${ownedTable} o JOIN ${table} d ON d.id=o.${ownedColumn} WHERE o.player_id=? AND o.${ownedColumn}=? LIMIT 1 FOR UPDATE`, [req.player.id,id]);
+    if (!owned) { await connection.rollback(); return fail(res, 404, `You do not own this ${kind}.`); }
+    await connection.execute(`DELETE FROM ${ownedTable} WHERE id=?`, [owned.id]);
+    const stat = kind === 'vehicle' ? null : statColumns[owned.bonusType];
+    if (stat) await connection.execute(`UPDATE players SET money=money+?,gold=gold+?,${stat}=GREATEST(0,${stat}-?) WHERE id=?`, [Math.floor(owned.money/2),Math.floor(owned.gold/2),owned.bonusValue,req.player.id]);
+    else await connection.execute('UPDATE players SET money=money+?,gold=gold+? WHERE id=?', [Math.floor(owned.money/2),Math.floor(owned.gold/2),req.player.id]);
+    const snapshot = await playerSnapshot(connection, req.player.id);
+    await connection.commit();
+    res.json({ player: snapshot, message: `${kind[0].toUpperCase()}${kind.slice(1)} sold for a partial refund.` });
+  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
+});
+
 router.post('/properties/:id/collect', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id < 1) return fail(res, 400, 'Choose a valid property.');
@@ -248,6 +272,26 @@ router.post('/messages/:id/read', async (req, res) => {
   if (!Number.isInteger(id) || id < 1) return fail(res, 400, 'Choose a valid message.');
   await pool.execute("UPDATE messages SET viewed='Yes' WHERE id=? AND toid=?", [id,req.player.id]);
   res.json({ message: 'Message marked as read.' });
+});
+
+router.get('/players/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return fail(res, 400, 'Choose a valid player.');
+  const [[player]] = await pool.execute('SELECT id,username,avatar,role,level,money,gold,respect,health,energy,power,agility,endurance,intelligence,timeonline FROM players WHERE id=?', [id]);
+  if (!player) return fail(res, 404, 'Player not found.');
+  const [comments] = await pool.execute('SELECT c.id,c.author_id AS authorId,a.username AS author,c.comment,c.date,c.time FROM player_comments c JOIN players a ON a.id=c.author_id WHERE c.player_id=? ORDER BY c.id DESC LIMIT 50', [id]);
+  res.json({ player, comments });
+});
+
+router.post('/players/:id/comments', async (req, res) => {
+  const id = Number(req.params.id);
+  const content = typeof req.body.comment === 'string' ? req.body.comment.trim() : '';
+  if (!Number.isInteger(id) || id < 1 || !content || content.length > 255) return fail(res, 400, 'Write a comment up to 255 characters.');
+  const [[target]] = await pool.execute('SELECT id FROM players WHERE id=?', [id]);
+  if (!target) return fail(res, 404, 'Player not found.');
+  const date = new Date();
+  const [result] = await pool.execute('INSERT INTO player_comments (player_id,author_id,comment,date,time) VALUES (?,?,?,?,?)', [id,req.player.id,content,date.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}),date.toTimeString().slice(0,5)]);
+  res.status(201).json({ id: result.insertId, message: 'Comment posted.' });
 });
 
 router.put('/settings', async (req, res) => {

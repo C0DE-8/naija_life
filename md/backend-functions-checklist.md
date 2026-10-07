@@ -14,7 +14,7 @@ This checklist is based on the player-facing pages, admin screens, form actions,
 ## Player profile and communication
 
 - [ ] View the signed-in player's dashboard, stats, timers, owned assets, and status.
-- [ ] View another player's public profile and statistics.
+- [x] View another player's public profile and statistics. (`GET /api/game/players/:id`)
 - [ ] Post comments on the home feed and player profiles.
 - [x] Send and view private messages, including unread/read status. (`GET /api/game/messages`, `POST /api/game/messages`, `POST /api/game/messages/:id/read`)
 - [ ] Post and retrieve global chat messages.
@@ -37,14 +37,14 @@ Frontend route shells exist for `/messages`, `/settings`, `/leaderboard`, and `/
 - [x] Withdraw money from the bank. (`POST /api/game/bank/withdraw`)
 - [ ] Buy and use resources/services with the configured currency and effects.
 - [x] Buy shop items and apply their stat bonuses and inventory changes. (`POST /api/game/purchases/item/:id`)
-- [ ] Manage equipped/owned items and item categories as used by the game.
-- [ ] Buy and manage pets, including home capacity and pet limits.
+- [x] Manage owned items and item categories as used by the game. (`GET /api/game/catalog/shop`, `POST /api/game/sales/item/:id`)
+- [x] Buy and manage pets, including home capacity and pet limits. (`POST /api/game/purchases/pet/:id`, `POST /api/game/sales/pet/:id`)
 - [x] Buy properties and collect timed property income. (`POST /api/game/purchases/property/:id`, `POST /api/game/properties/:id/collect`)
 - [x] Upgrade homes and manage home capacity. (`POST /api/game/purchases/home/:id`)
 - [x] Upgrade garages and manage vehicle capacity. (`POST /api/game/purchases/garage/:id`)
 - [x] Upgrade hangars and manage aircraft capacity. (`POST /api/game/purchases/hangar/:id`)
 - [x] Upgrade quays and manage boat capacity. (`POST /api/game/purchases/quay/:id`)
-- [ ] Buy and manage vehicles, including garage/hangar/quay placement and vehicle stats.
+- [x] Buy and manage vehicles, including garage/hangar/quay placement and vehicle stats. (`POST /api/game/purchases/vehicle/:id`, `POST /api/game/sales/vehicle/:id`)
 - [x] Upgrade vehicle performance. (`GET /api/game/vehicles/owned`, `POST /api/game/vehicles/:id/upgrade`)
 - [ ] Complete purchases and mutations for the added catalog page routes (vehicles, properties, pets, shop items, resources, casino, races, and fights).
 - [ ] Race vehicles and record race outcomes/rewards.

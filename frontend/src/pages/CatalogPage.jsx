@@ -51,11 +51,13 @@ function detailsFor(item, kind) {
 }
 
 const purchaseKinds = { vehicles: 'vehicle', properties: 'property', pets: 'pet', shop: 'item', 'home-upgrades': 'home', 'garage-upgrades': 'garage', 'hangar-upgrades': 'hangar', 'quay-upgrades': 'quay' }
+const saleKinds = { vehicles: 'vehicle', pets: 'pet', shop: 'item' }
 
 export default function CatalogPage({ kind, onAction, busy = false, refreshKey = '' }) {
   const [items, setItems] = useState([])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
+  const [clock, setClock] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -69,6 +71,10 @@ export default function CatalogPage({ kind, onAction, busy = false, refreshKey =
     }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [kind, refreshKey])
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   const categories = useMemo(() => ['All', ...new Set(items.map((item) => item.category).filter(Boolean))], [items])
   const filtered = useMemo(() => items.filter((item) => itemName(item, kind).toLowerCase().includes(query.toLowerCase()) && (category === 'All' || item.category === category)), [items, kind, query, category])
@@ -81,14 +87,17 @@ export default function CatalogPage({ kind, onAction, busy = false, refreshKey =
     {loading && <div className="loading-card">Loading {catalogTitles[kind].toLowerCase()}…</div>}
     {!loading && !error && filtered.length === 0 && <div className="loading-card">No listings found.</div>}
     {!loading && !error && <div className="catalog-grid">{filtered.map((item, index) => {
-      const propertyReady = kind === 'properties' && item.owned
+      const propertyWaiting = kind === 'properties' && item.owned && Number(item.profittime) > Math.floor(clock / 1000)
+      const propertyReady = kind === 'properties' && item.owned && !propertyWaiting
       const itemAction = purchaseKinds[kind]
+      const itemSale = saleKinds[kind]
       const canPurchase = Boolean(itemAction) && !item.owned
-      const buttonText = propertyReady ? 'Collect income' : item.owned ? 'Owned' : canPurchase ? 'Purchase' : interactive ? 'Challenge soon' : 'Available soon'
+      const canSell = Boolean(itemSale) && item.owned
+      const buttonText = propertyReady ? 'Collect income' : propertyWaiting ? `Income in ${Math.ceil((Number(item.profittime) - Math.floor(clock / 1000)) / 60)} min` : canSell ? 'Sell · 50% refund' : item.owned ? 'Owned' : canPurchase ? 'Purchase' : interactive ? 'Challenge soon' : 'Available soon'
       return <article className="game-card catalog-card" key={item.id ?? item.username ?? index}>
       <div className="catalog-art" aria-hidden="true">{item.image ? <img src={item.image.startsWith('/') ? item.image : `/ncity/${item.image}`} alt="" loading="lazy" /> : kind === 'vehicles' ? '↗' : kind === 'pets' ? '✦' : kind === 'leaderboard' ? `#${index + 1}` : kind === 'casino' ? '◇' : 'NC'}</div>
       <div className="catalog-main"><span className="card-kicker">{item.category || kind.toUpperCase()}</span><h2>{itemName(item, kind)} {item.owned && <small className="owned-label">OWNED</small>}</h2><div className="catalog-facts">{detailsFor(item, kind).map((detail) => <span key={detail}>{detail}</span>)}</div></div>
-      <button className="secondary-game-button catalog-action" disabled={busy || (!canPurchase && !propertyReady)} title={interactive ? 'Player challenges are not connected yet.' : undefined} onClick={() => propertyReady ? onAction('collect-property', item.id) : canPurchase ? onAction(itemAction, item.id) : undefined}>{buttonText}</button>
+      {kind === 'leaderboard' ? <Link className="secondary-game-button catalog-action" to={`/player/${item.id}`}>View profile ↗</Link> : <button className="secondary-game-button catalog-action" disabled={busy || propertyWaiting || (!canPurchase && !propertyReady && !canSell)} title={interactive ? 'Player challenges are not connected yet.' : undefined} onClick={() => propertyReady ? onAction('collect-property', item.id) : canSell ? onAction(`sell-${itemSale}`, item.id) : canPurchase ? onAction(itemAction, item.id) : undefined}>{buttonText}</button>}
     </article>
     })}</div>}
     {kind === 'vehicles' && <Link className="catalog-shortcut" to="/vehicle-upgrades">Manage your vehicles and upgrade performance <span>↗</span></Link>}

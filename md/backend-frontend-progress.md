@@ -14,8 +14,10 @@ This update connects the React client to the existing Naija Life MySQL schema in
 - `POST /api/game/actions/leave` removes the active action and returns the legacy PHP partial refund where applicable.
 - `GET /api/game/characters` and `POST /api/game/character` load character choices and apply their starting stats once.
 - `POST /api/game/purchases/{item|property|pet|vehicle|home|garage|hangar|quay}/:id` applies prices, level/VIP checks, ownership, capacity and stat effects for PHP shop and upgrade flows.
+- `POST /api/game/sales/{item|pet|vehicle}/:id` returns the PHP-style partial refund and removes the owned item.
 - `POST /api/game/properties/:id/collect` checks the property timer, pays its income once, and advances the next collection time.
 - `GET /api/game/messages`, `POST /api/game/messages`, and `POST /api/game/messages/:id/read` support private inbox, send and read state.
+- `GET /api/game/players/:id` and `POST /api/game/players/:id/comments` load public profiles and profile comments.
 - `PUT /api/game/settings` updates email/avatar and hashes a new password; `GET/PUT /api/game/preferences` load and save the supported language and theme.
 - `GET /api/game/vehicles/owned` and `POST /api/game/vehicles/:id/upgrade` manage the player's vehicle performance stats.
 - `POST /api/game/casino/spin` spends a spin and grants a seeded prize; `POST /api/game/casino/spins` buys spins with in-game cash.

@@ -1,5 +1,5 @@
 import api from './api'
-import { demoBuySpins, demoReadMessage, demoSendMessage, demoSpin, getDemoMessages, saveDemoPreferences, saveDemoSettings, isLocalDemo } from './demo'
+import { demoBuySpins, demoReadMessage, demoSendMessage, demoSpin, getDemoMessages, saveDemoPreferences, saveDemoSettings, isLocalDemo, getDemoProfile, demoPostComment } from './demo'
 
 export const getMessages = () => isLocalDemo() ? getDemoMessages() : api.get('/game/messages').then(({ data }) => data)
 export const sendMessage = (username, content) => isLocalDemo() ? demoSendMessage(username, content) : api.post('/game/messages', { username, content }).then(({ data }) => data)
@@ -11,3 +11,5 @@ export const saveSettings = (details) => isLocalDemo() ? saveDemoSettings(detail
 export const savePreferences = (details) => isLocalDemo() ? saveDemoPreferences(details) : api.put('/game/preferences', details).then(({ data }) => data)
 export const spinCasino = () => isLocalDemo() ? demoSpin() : api.post('/game/casino/spin').then(({ data }) => data)
 export const buyCasinoSpins = (quantity) => isLocalDemo() ? demoBuySpins(quantity) : api.post('/game/casino/spins', { quantity }).then(({ data }) => data)
+export const getPlayerProfile = (id) => isLocalDemo() ? getDemoProfile(id) : api.get(`/game/players/${id}`).then(({ data }) => data)
+export const postPlayerComment = (id, comment) => isLocalDemo() ? demoPostComment(id, comment) : api.post(`/game/players/${id}/comments`, { comment }).then(({ data }) => data)

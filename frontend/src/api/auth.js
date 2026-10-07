@@ -23,6 +23,7 @@ export function signOut() {
 }
 
 export function saveAuth({ token, player }) {
+  localStorage.removeItem('naijaLifeDemoMode')
   localStorage.setItem('naijaLifeToken', token)
   localStorage.setItem('naijaLifePlayer', JSON.stringify(player))
 }

@@ -2,13 +2,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { FiArrowUpRight } from 'react-icons/fi'
 import { getApiError, signIn, signOut, signUp } from './api/auth'
-import { bankTransfer, collectPropertyIncome, finishActivity, getActivities, getDashboard, leaveActivity, purchaseListing, startActivity, upgradeVehicle } from './api/game'
+import { bankTransfer, collectPropertyIncome, finishActivity, getActivities, getDashboard, leaveActivity, purchaseListing, sellListing, startActivity, upgradeVehicle } from './api/game'
 import CatalogPage from './pages/CatalogPage'
 import CharacterSelector from './pages/CharacterSelector'
 import VehicleUpgradePage from './pages/VehicleUpgradePage'
 import MessagesPage from './pages/MessagesPage'
 import SettingsPage from './pages/SettingsPage'
 import CasinoPage from './pages/CasinoPage'
+import PlayerProfilePage from './pages/PlayerProfilePage'
 import { isLocalDemo, resetLocalDemo } from './api/demo'
 import './App.css'
 
@@ -194,18 +195,20 @@ function Dashboard() {
           </div>
           <div className="game-card action-card"><div className="card-heading"><div><span className="card-kicker">CITY ACTIVITY</span><h2>{active ? active.type : 'Ready when you are'}</h2></div><span className="activity-icon">✦</span></div>{active ? <><p className="muted-copy">Your activity is in progress. Come back when the timer ends to collect your reward.</p><div className="timer-box">{secondsLeft ? `Ready in ${Math.floor(secondsLeft / 3600)}h ${Math.floor(secondsLeft % 3600 / 60)}m ${secondsLeft % 60}s` : 'Ready to collect'}</div><button className="primary-game-button" disabled={busy || secondsLeft > 0} onClick={() => perform(finishActivity)}>Collect reward</button><button className="subtle-game-button" disabled={busy} onClick={() => perform(leaveActivity)}>Leave activity</button></> : <><p className="muted-copy">Work, train, study, or recover to build your life in the city.</p><button className="primary-game-button" onClick={() => navigate('/jobs')}>Find work <FiArrowUpRight /></button></>}</div>
         </div>
+        {dashboard.properties?.length > 0 && <section className="owned-property-section"><div className="section-title"><div><span className="card-kicker">YOUR PORTFOLIO</span><h2>Property income</h2></div><Link className="text-button" to="/properties">View properties</Link></div><div className="owned-property-grid">{dashboard.properties.map((property) => { const ready = Number(property.profittime) <= Math.floor(clock / 1000); return <article className="game-card owned-property" key={property.id}><div><strong>{property.property}</strong><span>${Number(property.income).toLocaleString()} · every {property.time} {property.format.toLowerCase()}</span></div><button className="secondary-game-button" disabled={busy || !ready} onClick={() => perform(() => collectPropertyIncome(property.id))}>{ready ? 'Collect income' : 'Income pending'}</button></article>})}</div></section>}
         <p className="city-footnote">{dashboard.total_players} players have made Naija Life their home.</p>
       </>}
       {dashboard && activityGroup && <div className="activity-grid">{activityGroup.map((item) => <div className="game-card activity-tile" key={item.id}><span className="card-kicker">{section.toUpperCase()}</span><h2>{item.name}</h2><div className="activity-facts">{Object.entries(item).filter(([key]) => !['id', 'name'].includes(key)).map(([key, value]) => <span key={key}>{key.replace(/[A-Z]/g, (letter) => ` ${letter.toLowerCase()}`)} <strong>{value}{key === 'money' || key === 'fee' || key === 'cost' ? ' cash' : ''}</strong></span>)}</div><button className="primary-game-button" disabled={busy || Boolean(active)} onClick={() => perform(() => startActivity(activityKinds[section], item.id))}>{active ? 'Another activity is active' : 'Start activity'} <FiArrowUpRight /></button></div>)}</div>}
       {dashboard && section === 'Bank' && <div className="bank-layout"><div className="game-card bank-balance"><span className="card-kicker">SAFE AND SOUND</span><h2>Your bank balance</h2><strong className="bank-amount">${Number(player.bank).toLocaleString()}</strong><p className="muted-copy">Available cash: ${Number(player.money).toLocaleString()}</p></div><div className="game-card bank-form"><span className="card-kicker">MOVE YOUR MONEY</span><h2>Bank transfer</h2><label>Amount<input type="number" min="1" step="1" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Enter an amount" /></label><div className="bank-buttons"><button className="primary-game-button" disabled={busy || !amount} onClick={() => perform(() => bankTransfer('deposit', Number(amount)))}>Deposit</button><button className="secondary-game-button" disabled={busy || !amount} onClick={() => perform(() => bankTransfer('withdraw', Number(amount)))}>Withdraw</button></div></div></div>}
-      {dashboard && catalogKind && <CatalogPage kind={catalogKind} busy={busy} refreshKey={`${player?.money}:${player?.gold}:${player?.respect}:${player?.level}`} onAction={(kind, id) => perform(() => kind === 'collect-property' ? collectPropertyIncome(id) : purchaseListing(kind, id))} />}
+      {dashboard && catalogKind && <CatalogPage kind={catalogKind} busy={busy} refreshKey={`${player?.money}:${player?.gold}:${player?.respect}:${player?.level}`} onAction={(kind, id) => perform(() => kind === 'collect-property' ? collectPropertyIncome(id) : kind.startsWith('sell-') ? sellListing(kind.slice(5), id) : purchaseListing(kind, id))} />}
       {dashboard && section === 'Vehicle upgrades' && <VehicleUpgradePage busy={busy} refreshKey={`${player?.money}:${player?.respect}`} onUpgrade={(id, stat) => perform(() => upgradeVehicle(id, stat))} />}
       {dashboard && section === 'Messages' && <MessagesPage playerId={player.id} />}
       {dashboard && section === 'Settings' && <SettingsPage />}
       {dashboard && section === 'Casino' && <CasinoPage player={player} onUpdate={load} />}
+      {dashboard && section === 'Player profile' && <PlayerProfilePage playerId={playerId} />}
       {dashboard && section === 'Choose character' && <CharacterSelector player={player} />}
-      {dashboard && (pageCopy[section] || section === 'City page') && !catalogKind && !['Choose character', 'Vehicle upgrades', 'Messages', 'Settings'].includes(section) && <LegacyPage section={section} description={pageCopy[section] || 'This page is part of the original Naija City player menu.'} player={player} playerId={playerId} />}
-      {dashboard && routePath.startsWith('/admin') && <LegacyPage section="Administration" description={pageCopy.Administration} player={player} />}
+      {dashboard && (pageCopy[section] || section === 'City page') && !catalogKind && !['Choose character', 'Vehicle upgrades', 'Messages', 'Settings', 'Player profile'].includes(section) && <LegacyPage section={section} description={pageCopy[section] || 'This page is part of the original Naija City player menu.'} player={player} playerId={playerId} />}
+      {dashboard && routePath.startsWith('/admin') && <LegacyPage section={player.role === 'Admin' ? 'Administration' : 'Restricted'} description={player.role === 'Admin' ? pageCopy.Administration : 'This area is limited to administrators.'} player={player} />}
     </section>
   </main>
 }

@@ -247,6 +247,22 @@ export async function demoPurchaseListing(kind, id) {
   return { player: current.player, message: `${item.name} added to your demo city.` }
 }
 
+export async function demoSellListing(kind, id) {
+  const current = state()
+  const key = kind === 'vehicle' ? 'vehicles' : kind === 'pet' ? 'pets' : 'items'
+  const owned = current[key] || []
+  if (!owned.includes(Number(id))) throw demoError(`You do not own this ${kind}.`)
+  const catalog = catalogs[kind === 'vehicle' ? 'vehicles' : kind === 'pet' ? 'pets' : 'shop']
+  const item = catalog.find((entry) => entry.id === Number(id))
+  if (!item) throw demoError('Listing was not found.')
+  current[key] = owned.filter((value) => value !== Number(id))
+  current.player.money += Math.floor(item.money / 2)
+  current.player.gold += Math.floor(item.gold / 2)
+  if (kind !== 'vehicle' && item.bonusType && !['energy', 'health'].includes(item.bonusType)) current.player[item.bonusType] = Math.max(0, current.player[item.bonusType] - item.bonusValue)
+  save(current)
+  return { player: current.player, message: `${item.name} sold in demo mode.` }
+}
+
 export async function demoCollectPropertyIncome(id) {
   const current = state()
   const property = current.properties.find((entry) => entry.id === Number(id))
@@ -332,4 +348,17 @@ export async function demoBuySpins(quantity) {
   current.player.spins += amount
   save(current)
   return { message: `${amount} demo spins purchased.` }
+}
+export function getDemoProfile(id) {
+  const current = state()
+  const player = Number(id) === 2 ? current.player : { id: 3, username: 'cityboss', avatar: 'images/icons/default-avatar.jpg', role: 'Player', level: 8, money: 52000, gold: 40, respect: 9780, health: 100, energy: 90, power: 40, agility: 25, endurance: 30, intelligence: 18 }
+  return Promise.resolve({ player, comments: (current.comments || []).filter((comment) => comment.playerId === Number(id)) })
+}
+export async function demoPostComment(id, content) {
+  const text = String(content || '').trim()
+  if (!text || text.length > 255) throw demoError('Write a comment up to 255 characters.')
+  const current = state()
+  current.comments = [{ id: Date.now(), authorId: current.player.id, author: current.player.username, comment: text, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), playerId: Number(id) }, ...(current.comments || [])]
+  save(current)
+  return { message: 'Comment posted in demo mode.' }
 }

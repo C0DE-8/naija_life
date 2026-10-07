@@ -1,5 +1,5 @@
 import api from './api'
-import { demoBankTransfer, demoChooseCharacter, demoCollectPropertyIncome, demoFinishActivity, getDemoActivities, getDemoDashboard, getDemoCharacters, demoLeaveActivity, demoPurchaseListing, demoStartActivity, getDemoOwnedVehicles, demoUpgradeVehicle, isLocalDemo } from './demo'
+import { demoBankTransfer, demoChooseCharacter, demoCollectPropertyIncome, demoFinishActivity, getDemoActivities, getDemoDashboard, getDemoCharacters, demoLeaveActivity, demoPurchaseListing, demoStartActivity, getDemoOwnedVehicles, demoUpgradeVehicle, demoSellListing, isLocalDemo } from './demo'
 
 export const getDashboard = () => isLocalDemo() ? getDemoDashboard() : api.get('/game/dashboard').then(({ data }) => data)
 export const getActivities = () => isLocalDemo() ? getDemoActivities() : api.get('/game/activities').then(({ data }) => data)
@@ -8,6 +8,7 @@ export const startActivity = (kind, id) => isLocalDemo() ? demoStartActivity(kin
 export const finishActivity = () => isLocalDemo() ? demoFinishActivity() : api.post('/game/actions/finish').then(({ data }) => data)
 export const leaveActivity = () => isLocalDemo() ? demoLeaveActivity() : api.post('/game/actions/leave').then(({ data }) => data)
 export const purchaseListing = (kind, id) => isLocalDemo() ? demoPurchaseListing(kind, id) : api.post(`/game/purchases/${kind}/${id}`).then(({ data }) => data)
+export const sellListing = (kind, id) => isLocalDemo() ? demoSellListing(kind, id) : api.post(`/game/sales/${kind}/${id}`).then(({ data }) => data)
 export const collectPropertyIncome = (id) => isLocalDemo() ? demoCollectPropertyIncome(id) : api.post(`/game/properties/${id}/collect`).then(({ data }) => data)
 export const getCharacters = () => isLocalDemo() ? getDemoCharacters() : api.get('/game/characters').then(({ data }) => data)
 export const chooseCharacter = (id) => isLocalDemo() ? demoChooseCharacter(id) : api.post('/game/character', { id }).then(({ data }) => data)
